@@ -61,7 +61,7 @@ bool openPlayList = false;
 Map<String,Widget> listOfPlayLists = {};
 Map<int,int> playlistSongsIndex={};
 bool playingFromList=false;
-
+bool a=false;
 
 
 
