@@ -12,15 +12,15 @@ import 'package:sizer/sizer.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 import 'global.dart';
-import 'listModel.dart';
 
 List<Widget> listOfSongs = [];
 String uriOfAvtiveSong = "";
 String nameOfPlayingSong = "";
 int count = 1;
+bool changedTheme=false;
 bool endOfList = false;
 bool shuffle=false;
-bool autoPlayNext=false;
+bool autoPlayNext=true;
 bool repeat=false;
 Random random = Random();
 int shuffleAnimteDuration=700;
@@ -53,6 +53,7 @@ Map<String, Color> themes = {
   "Red": const Color(0xFFE43F5A),
   "Pink": const Color(0xFFF875AA),
   "Cyan": const Color(0xFF51C4D3),
+  "yellow":  Colors.yellow,
 };
 final assetsAudioPlayer = AssetsAudioPlayer();
 late bool shadowsOn = true;

@@ -27,7 +27,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   late AnimationController controllerOfDrawer = AnimationController(
-    duration: 1000.ms,
+    duration: 600.ms,
     vsync: this,
   );
  late AnimationController controllerOfList = AnimationController(
@@ -92,7 +92,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   }
   }
 
-  void getAudios(int c) async {
+  Future getAudios(int c) async {
     listOfSongs.clear();
     audios.clear();
     SharedPreferences pref=await SharedPreferences.getInstance();
@@ -179,7 +179,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
    
     pref.setDouble("progress",progress);
     pref.setDouble("barPosition", barPosition);
-    if(assetsAudioPlayer.current.valueOrNull==null){
+    if(assetsAudioPlayer.current.valueOrNull==null&&autoPlayNext){
          if(playingFromList) {
           if(repeat){
         selectSong(indexOfCurrentSong, false, audiosOfList);
@@ -495,7 +495,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                              Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                               themeButton("Blue", const Color(0xFF0881A3)),
+                               themeButton("Blue",     const Color(0xFF0881A3)),
                                  themeButton("Orange", const Color(0xFFFE7A36)),
                                       
                               ],
@@ -505,7 +505,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                              Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                themeButton("Red", const Color(0xFFE43F5A)),      
+                                themeButton("Red",   const Color(0xFFE43F5A)),      
                                  themeButton("Pink", const Color(0xFFF875AA)),
                                       
                               ],
@@ -515,6 +515,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                              Row(
                               children: [
                                themeButton("Cyan", const Color(0xFF51C4D3)),
+                               themeButton("yellow",  Colors.yellow),
                                       
                                       
                               ],
@@ -561,7 +562,9 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                     fontColor = const Color(0xFF2D2D2D);
                                   });
                                 }
-                                getAudios(count);
+                              //   await assetsAudioPlayer.pause();
+                              //  await getAudios(count);
+                              //    assetsAudioPlayer.play();
                                 getLists();
                               },bodyColor != const Color(0xFF1B1B2F)? CustomIcons.noun_dark_mode_6724412
                               :Icons.sunny, 100),
@@ -657,13 +660,13 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                         .slideX(
                           begin: -1,
                           end: 0,
-                          duration: 400.ms,
+                          duration: 300.ms,
                           curve: Curves.easeInOut,
                         )
                         .fadeIn(
-                          duration: 400.ms,
+                          duration: 300.ms,
                           curve: Curves.easeInOut,
-                        ),
+                        )
                   ),
               ],
             ),
@@ -1032,10 +1035,12 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       prefs.setString('theme',title);
 
 
+
+        // getAudios(count);
+
       setState(() {
         mainColor=color;
         openDrawer=false;
-        getAudios(count);
                                 getLists();
         Navigator.pop(context);
       });
@@ -1270,7 +1275,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                           style:setFontStyle(12.sp, FontWeight.bold, fontColor.withOpacity(0.5)) ,),),
                       ],
                     ),
-                    ).animate(delay: 300.ms).fadeIn(duration: 500.ms,curve: Curves.easeInOut)
+                    ).animate(delay: 300.ms).fadeIn(duration: 300.ms,curve: Curves.easeInOut)
                  
                  
                 ]),
@@ -1283,7 +1288,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                   itemExtent: 15.h,
                        children:songsOfList
                 )),
-               ).animate(controller: controllerOfList).slideY(end: 0,begin: 1,duration:openPlayList? 400.ms:0.ms,curve: Curves.easeInOut),
+               ).animate(controller: controllerOfList).slideY(end: 0,begin: 1,duration:openPlayList? 300.ms:0.ms,curve: Curves.easeInOut),
 
 
                 if(openPlayList)  Positioned(
@@ -1321,7 +1326,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                         size: 4.h,
                                         color: mainColor.withOpacity(0.7),
                                       ))),
-                                  ).animate(controller: controllerOfList).fadeIn(duration: 500.ms,curve: Curves.easeInOut,delay: 400.ms),
+                                  ).animate(controller: controllerOfList).fadeIn(duration: 400.ms,curve: Curves.easeInOut,delay: 400.ms),
 
                   ),
               ],
