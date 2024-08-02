@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
@@ -10,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundly/custom_icons_icons.dart';
 import 'package:soundly/global.dart';
 import 'package:soundly/alertsAndVars.dart';
@@ -27,38 +25,54 @@ class MainPage extends StatefulWidget {
 
 class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   late AnimationController controllerOfDrawer = AnimationController(
-    duration: 600.ms,
+    duration: 400.ms,
     vsync: this,
   );
  late AnimationController controllerOfList = AnimationController(
-    duration: 600.ms,
+    duration: 400.ms,
     vsync: this,
 
   );
 
+     late SharedPreferences pref;
 
 
   @override
   void initState() {
-    // getAudios(count);
+    getSharedPrefs();
+
     getAudios(count);
     super.initState();
     getLists();
     activeDots[0]=true;
 
-      
   }
 
  
-
+  getSharedPrefs()async{
+    pref=await SharedPreferences.getInstance();
+  }
 
   void getLists()async{
     listOfPlayLists.clear();
-    SharedPreferences pref=await SharedPreferences.getInstance();
+    
+    listOfPlayLists["Recently played"]=createPlayList("Recently played", () {
+              // pref.setString('lastOpenedList',"Recently played");
 
-      for(int i=0;i<10;i++){
+        setState(() {
+          titleOfOpenedList="Recently played";
+          openPlayList=true;
+          text="Recently played";
+          
+        });
+        getSongsOfList();
+        
+  }, () { });
+
+      for(int i=1;i<10;i++){
     if(pref.getString("list,$i")!=null){
       listOfPlayLists[pref.getString("list,$i")!]=createPlayList(pref.getString("list,$i")!, () {
+
         setState(() {
           titleOfOpenedList=pref.getString("list,$i")!;
           openPlayList=true;
@@ -69,14 +83,14 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         
        }, (){
                                       alertDeletePlayList(context, pref.getString("list,$i")!, ()async { 
-                                        SharedPreferences pref=await SharedPreferences.getInstance();
+                                        
            for(int i=0;i<150;i++){
           if(pref.getInt("${pref.getString("list,$i")},$i")!=null){
             pref.remove("${pref.getString("list,$i")},$i");
           }
         }
 
-        for(int i=0;i<10;i++){
+        for(int i=1;i<10;i++){
           if(pref.getString("list,$i")==pref.getString("list,$i")!) {
             setState(() {
         listOfPlayLists.remove(pref.getString("list,$i")!);
@@ -95,7 +109,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   Future getAudios(int c) async {
     listOfSongs.clear();
     audios.clear();
-    SharedPreferences pref=await SharedPreferences.getInstance();
+    
 
 
     final OnAudioQuery _audioQuery = OnAudioQuery();
@@ -108,7 +122,11 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
     setState(() {});
     
     if(pref.getInt("index")!=null){
-      if(playingFromList) {
+      if(pref.getString("lastOpenedList")!=null) {
+        titleOfOpenedList=pref.getString("lastOpenedList")!;
+     await getSongsOfList();
+     print("name of list ${pref.getString("lastOpenedList")}");
+
         selectSong(pref.getInt("index")!.toInt(),true,audiosOfList);
       } else {
         selectSong(pref.getInt("index")!.toInt(),true,audios);
@@ -157,7 +175,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void updateDuration()async{
-    SharedPreferences pref=await SharedPreferences.getInstance();
+    
 
 
 
@@ -374,6 +392,12 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                       text,
                       style: setFontStyle(12.sp, FontWeight.bold, fontColor),
                     )).fade(duration: index == 0 ? 801.ms : index == 1 ? 802.ms: 800.ms),
+                   openPlayList? 
+                   Animate(child:
+                    Text("${audiosOfList.length} tracks",style: setFontStyle(10.sp, FontWeight.bold, fontColor.withOpacity(0.7)),))
+                    .fadeIn(duration: 500.ms,curve: Curves.easeInOut)
+                   :Text("",style: TextStyle(fontSize: 10.sp),),
+
                     SizedBox(
                       width: double.infinity,
                       height: 80.h,
@@ -418,7 +442,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                         onPressed: () {
                           controllerOfDrawer.reverse();
             
-                          Timer(const Duration(milliseconds: 500), () {
+                          Timer(const Duration(milliseconds: 400), () {
                             setState(() {
                               openDrawer = false;
                             });
@@ -428,7 +452,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                       ),
                     ),
                   ).animate(controller: controllerOfDrawer).fadeIn(
-                        duration: 500.ms,
+                        duration: 400.ms,
                         // curve: Curves.easeInOut,
                       ),
             
@@ -542,10 +566,9 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                               drawerButton(const Color(0xFFFE7A36), bodyColor != const Color(0xFF1B1B2F)?"Dark mode":
                               "Light mode",
                                   () async {
-                                SharedPreferences prefs =
-                                    await SharedPreferences.getInstance();
+                             
                                 if (bodyColor == const Color(0xFFE7E7E7)) {
-                                  prefs.setBool('darkMode',true);
+                                  pref.setBool('darkMode',true);
                                   anim(200);
                                   setState(() {
                                     bodyColor = const Color(0xFF1B1B2F);
@@ -553,7 +576,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                     fontColor = const Color(0xFFE7E7E7);
                                   });
                                 } else {
-                                  prefs.setBool('darkMode',false);
+                                  pref.setBool('darkMode',false);
                                   setState(() {
                                     anim(201);
                                       
@@ -573,9 +596,11 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                 alertAddPlayList(context,()async{
                                   String t=listTitle.text;
                                   
+                                  
                                   if(listTitle.text.isNotEmpty){
                                   setState(() {
                                     listOfPlayLists[listTitle.text]=createPlayList(listTitle.text,(){
+
                                       setState(() {
                                         titleOfOpenedList=listTitle.text;
                                         openPlayList=true;
@@ -585,14 +610,14 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                     },
                                     (){
                                       alertDeletePlayList(context, t, ()async { 
-                                        SharedPreferences pref=await SharedPreferences.getInstance();
+                                        
            for(int i=0;i<150;i++){
           if(pref.getInt("${pref.getString("list,$i")},$i")!=null){
             pref.remove("${pref.getString("list,$i")},$i");
           }
         }
 
-        for(int i=0;i<10;i++){
+        for(int i=1;i<10;i++){
           if(pref.getString("list,$i")==t) {
             setState(() {
         listOfPlayLists.remove(t);
@@ -605,12 +630,13 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                       });
        });
                                   });
+                                  
                                   Navigator.pop(context);
 
-                                  SharedPreferences prefs=await SharedPreferences.getInstance();
-                                  for(int i=0;i<10;i++){
-                                    if(prefs.getString("list,$i")==null){
-                                      prefs.setString("list,$i",listTitle.text);
+                                 
+                                  for(int i=1;i<10;i++){
+                                    if(pref.getString("list,$i")==null){
+                                      pref.setString("list,$i",listTitle.text);
                                       break;
                                       
                                     }
@@ -638,7 +664,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
 
                                   drawerButton(const Color(0xFF674188), "Reset data", () async{
                                     alertResetWarning(context,()async{
-                                         SharedPreferences pref=await SharedPreferences.getInstance();
+                                         
                                     setState(() {
                                       listOfPlayLists.clear();
                                     });
@@ -683,7 +709,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       child: Column(
         children: [
           SizedBox(
-            height: 8.h,
+            height: 4.h,
           ),
           Animate(
             child: Container(
@@ -973,8 +999,38 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
 
 
               uriOfAvtiveSong = audio.uri.toString();
-              SharedPreferences pref=await SharedPreferences.getInstance();
+
+              if(playingFromList){
+                pref.setString("lastOpenedList", titleOfOpenedList);
+              }
+              else{
+                pref.remove("lastOpenedList");
+              }
+              
               pref.setInt("index", index);
+
+
+                if(listOfPlayLists["Recently played"]==null){
+                     listOfPlayLists["Recently played"]=createPlayList("Recently played", () {
+        setState(() {
+          titleOfOpenedList="Recently played";
+          openPlayList=true;
+          text="Recently played";
+          
+        });
+        getSongsOfList();
+        
+  }, () { });
+
+                }
+               for(int i=0;i<150;i++){
+            if(pref.getInt("Recently played,$i")==null){
+              pref.setInt("Recently played,$i", index);
+              break;
+            }
+          }
+
+
               try {
                 await assetsAudioPlayer.open(
                     Audio.file(uriOfAvtiveSong,
@@ -1031,8 +1087,8 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   ),
 
     onPressed: ()async {
-      SharedPreferences prefs=await SharedPreferences.getInstance();
-      prefs.setString('theme',title);
+      
+      pref.setString('theme',title);
 
 
 
@@ -1041,7 +1097,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       setState(() {
         mainColor=color;
         openDrawer=false;
-                                getLists();
+        getLists();
         Navigator.pop(context);
       });
 
@@ -1175,7 +1231,9 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
     style: ButtonStyle(
     overlayColor: MaterialStateProperty.all(mainColor.withOpacity(0.3))
   ),
-            onPressed: (){
+            onPressed: ()async{
+             
+
               setState(() {
                 playingFromList=true;
               });
@@ -1244,7 +1302,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                 Column(children: [
                 
                   SizedBox(
-                    height: 10.h,
+                    height: 5.h,
                   ),
                   Container(
                     width: 100.w,
@@ -1257,12 +1315,14 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                     //         : [Container()],
                     //   ),
                     // ),
-                    child: listOfPlayLists.isNotEmpty? GridView(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                    child: listOfPlayLists.isNotEmpty? ListView(
+                      itemExtent: 130,
                             children: [
-                            
+                              
+                              
                               for(int i=0;i<listOfPlayLists.length;i++)
                               listOfPlayLists.values.elementAt(i),
+                              
                               
                            
                             
@@ -1286,7 +1346,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                     padding: EdgeInsets.only(top: 10.h),
                     child: ListView(
                   itemExtent: 15.h,
-                       children:songsOfList
+                       children:songsOfList.isNotEmpty?songsOfList:[Text("data")]
                 )),
                ).animate(controller: controllerOfList).slideY(end: 0,begin: 1,duration:openPlayList? 300.ms:0.ms,curve: Curves.easeInOut),
 
@@ -1329,6 +1389,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                                   ).animate(controller: controllerOfList).fadeIn(duration: 400.ms,curve: Curves.easeInOut,delay: 400.ms),
 
                   ),
+               
               ],
             ),
             //     Container(width: 100.w,height: 100.h,
@@ -1339,12 +1400,11 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
     );
   }
 
-void getSongsOfList()async{
+Future getSongsOfList()async{
       songsOfList.clear();
       playlistSongsIndex.clear();
       audiosOfList.clear();
       int count=0;
-      SharedPreferences pref=await SharedPreferences.getInstance();
 
   for(int i=0;i<150;i++){
     if(pref.getInt("$titleOfOpenedList,$i")==null){

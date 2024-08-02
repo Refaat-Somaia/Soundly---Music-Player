@@ -349,7 +349,7 @@ Widget createPlayList(String title,void Function()? func,void Function()? func2)
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                height: 6.h,
+                width: 70.w,
                 child: Text(
                   title,
                   overflow: TextOverflow.ellipsis,
@@ -481,6 +481,7 @@ dynamic alertShowPlayLists(BuildContext context,int index) {
                       children: [
                       
                         for(int i=0;i<listOfPlayLists.length;i++)
+                        if(listOfPlayLists.keys.elementAt(i)!="Recently played")
                         createAddToPlaylist(context,listOfPlayLists.keys.elementAt(i), index)
                         
                       ],
